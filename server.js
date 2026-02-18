@@ -2,13 +2,16 @@ const express = require('express');
 const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
+require('dotenv').config();
 const mongoose = require('mongoose');
 
+
+
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // MongoDB connection
-mongoose.connect('mongodb://localhost:27017/campuscomplaints')
+mongoose.connect(process.env.MONGO_URI) 
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('MongoDB connection error:', err));
 
@@ -244,6 +247,4 @@ app.post('/admin/update/:id', requireLogin, isAdmin, async (req, res) => {
   res.redirect('/admin');
 });
 
-app.listen(port, () => {
-  console.log(`Campus Complaint Portal running → http://localhost:${port}`);
-});
+app.listen(port, () => console.log(`Server running on port ${port}`));
