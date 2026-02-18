@@ -1,0 +1,15 @@
+<header class="bg-indigo-700 text-white shadow-lg">
+  <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+    <div class="flex items-center space-x-3">
+      <h1 class="text-2xl font-bold">Campus Complaint Portal</h1>
+    </div>
+    <div class="flex items-center space-x-6">
+      <% if (user) { %>
+        <span class="text-indigo-100">Welcome, <strong><%= user.name %></strong> (<%= user.role %>)</span>
+        <a href="/logout" class="hover:text-indigo-200 transition">Logout</a>
+      <% } else { %>
+        <a href="/login" class="hover:text-indigo-200 transition">Login</a>
+      <% } %>
+    </div>
+  </div>
+</header>

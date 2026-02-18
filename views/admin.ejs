@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 min-h-screen">
+  <%- include('partials/header') %>
+
+  <main class="container mx-auto px-6 py-10">
+    <h2 class="text-3xl font-bold text-gray-800 mb-8">Admin - Manage All Complaints</h2>
+
+    <div class="bg-white rounded-xl shadow overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-purple-700 text-white">
+            <tr>
+              <th class="px-6 py-4 text-left text-sm font-semibold">ID</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Submitter</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Title</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Category</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Status</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Date</th>
+              <th class="px-6 py-4 text-left text-sm font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <% complaints.forEach(c => { %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#<%= c.id %></td>
+                <td class="px-6 py-4 text-sm text-gray-600"><%= c.submitter %></td>
+                <td class="px-6 py-4 text-sm text-gray-900"><%= c.title %></td>
+                <td class="px-6 py-4 text-sm text-gray-600"><%= c.category %></td>
+                <td class="px-6 py-4">
+                  <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                    <%= c.status === 'Resolved' ? 'bg-green-100 text-green-800' :
+                        c.status === 'In Progress' ? 'bg-indigo-100 text-indigo-800' :
+                    'bg-yellow-100 text-yellow-800' %>">
+                    <%= c.status %>
+                  </span>
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-500"><%= c.createdAt %></td>
+                <td class="px-6 py-4 text-sm">
+                  <form action="/admin/update/<%= c.id %>" method="POST" class="flex items-center gap-3 flex-wrap">
+                    <select name="status" class="border border-gray-300 rounded px-3 py-2 text-sm">
+                      <option value="Open" <%= c.status==='Open'?'selected':'' %>>Open</option>
+                      <option value="In Progress" <%= c.status==='In Progress'?'selected':'' %>>In Progress</option>
+                      <option value="Resolved" <%= c.status==='Resolved'?'selected':'' %>>Resolved</option>
+                    </select>
+                    <input type="text" name="reply" value="<%= c.reply %>" placeholder="Add reply/comment..."
+                           class="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px]">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm font-medium transition">
+                      Update
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+
+      <% if (complaints.length === 0) { %>
+        <div class="p-12 text-center text-gray-500 text-lg">
+          No complaints have been submitted yet.
+        </div>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>
