@@ -1,19 +1,19 @@
-require('dotenv').config();
+// server.js - Campus Complaint & Resolution System
+
+require('dotenv').config(); // Load .env variables (MONGO_URI, etc.)
+
 const express = require('express');
 const session = require('express-session');
 const multer = require('multer');
 const path = require('path');
-
 const mongoose = require('mongoose');
 
-
-
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 
-// MongoDB connection
-mongoose.connect(process.env.MONGO_URI) 
-  .then(() => console.log('Connected to MongoDB'))
+// MongoDB connection (use Atlas via .env)
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('Connected to MongoDB Atlas'))
   .catch(err => console.error('MongoDB connection error:', err));
 
 // ── Models ────────────────────────────────────────────────
@@ -24,6 +24,7 @@ const userSchema = new mongoose.Schema({
   email: { type: String, default: null },
   role: { type: String, required: true, default: 'student' }
 });
+
 const User = mongoose.model('User', userSchema);
 
 const complaintSchema = new mongoose.Schema({
@@ -42,6 +43,7 @@ const complaintSchema = new mongoose.Schema({
   },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }
 });
+
 const Complaint = mongoose.model('Complaint', complaintSchema);
 
 // Seed demo users (run once)
@@ -49,9 +51,9 @@ async function seedDemoUsers() {
   const count = await User.countDocuments();
   if (count === 0) {
     await User.insertMany([
-      { username: "student1",   password: "1234",     role: "student", name: "Rithika S" },
-      { username: "admin",      password: "admin2026", role: "admin",  name: "Admin"      },
-      { username: "admin1234",  password: "admin1234", role: "admin",  name: "Admin 1234" }
+      { username: "student1", password: "1234", role: "student", name: "Rithika S" },
+      { username: "admin", password: "admin2026", role: "admin", name: "Admin" },
+      { username: "admin1234", password: "admin1234", role: "admin", name: "Admin 1234" }
     ]);
     console.log('Demo users seeded');
   }
@@ -67,9 +69,10 @@ app.use(session({
   secret: 'campus-complaint-secret-2026',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 1000 * 60 * 60 * 24 }
+  cookie: { maxAge: 1000 * 60 * 60 * 24 } // 24 hours
 }));
 
+// Multer for photo uploads
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, 'public/uploads/'),
   filename: (req, file, cb) => {
@@ -79,6 +82,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ storage });
 
+// Login protection middleware
 const requireLogin = (req, res, next) => {
   if (!req.session.user) return res.redirect('/login');
   next();
@@ -93,159 +97,109 @@ const isAdmin = (req, res, next) => {
 
 // ── Routes ──────────────────────────────────────────────────
 
+// Landing page
 app.get('/', (req, res) => {
-  if (req.session.user) return res.redirect('/dashboard');
   res.render('index');
 });
 
+// Register page
 app.get('/register', (req, res) => {
-  if (req.session.user) return res.redirect('/dashboard');
   res.render('register', { error: null });
 });
 
 app.post('/register', async (req, res) => {
-  const { name, username, password, email } = req.body;
-
-  if (!name || !username || !password) {
-    return res.render('register', { error: 'Name, username and password are required' });
+  try {
+    const { name, username, password, email } = req.body;
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.render('register', { error: 'Username already exists' });
+    }
+    const newUser = new User({ name, username, password, email });
+    await newUser.save();
+    req.session.user = newUser;
+    res.redirect('/dashboard');
+  } catch (err) {
+    res.render('register', { error: 'Registration failed' });
   }
-
-  if (await User.findOne({ username })) {
-    return res.render('register', { error: 'Username already taken' });
-  }
-
-  const newUser = new User({ username, password, name, email, role: 'student' });
-  await newUser.save();
-
-  req.session.user = newUser;
-  res.redirect('/dashboard');
 });
 
+// Login page
 app.get('/login', (req, res) => {
-  if (req.session.user) return res.redirect('/dashboard');
   res.render('login', { error: null });
 });
 
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
   const user = await User.findOne({ username, password });
-
-  if (user) {
-    req.session.user = user;
-    res.redirect('/dashboard');
-  } else {
-    res.render('login', { error: 'Invalid username or password' });
+  if (!user) {
+    return res.render('login', { error: 'Invalid username or password' });
   }
-});
-
-app.get('/logout', (req, res) => {
-  req.session.destroy(() => {
-    res.redirect('/');  // ← Redirect to landing page (Login / Sign Up choice)
-  });
-});
-
-app.get('/submit', requireLogin, (req, res) => {
-  res.render('submit', { user: req.session.user });
-});
-
-app.post('/submit', requireLogin, upload.single('proof'), async (req, res) => {
-  const { title, category, description, anonymous, contact_email } = req.body;
-  const isAnonymous = anonymous === 'on';
-
-  let submitterName = 'Anonymous';
-  let submitterEmail = null;
-
-  // Only reveal real name/email if NOT anonymous
-  if (!isAnonymous && req.session.user) {
-    submitterName = req.session.user.name;
-    submitterEmail = req.session.user.email || null;
-  }
-
-  const count = await Complaint.countDocuments();
-  const newId = count + 1;
-
-  const complaint = new Complaint({
-    id: newId,
-    submitter: submitterName,
-    email: submitterEmail,
-    title: title.trim(),
-    category,
-    description: description.trim(),
-    photo: req.file ? `/uploads/${req.file.filename}` : null,
-    userId: req.session.user._id   // ← Keep userId so student can see their own anonymous complaints
-  });
-
-  await complaint.save();
-
-  req.session.message = `Complaint submitted successfully! (ID: #${newId})`;
-  res.redirect('/dashboard');
-});
-
-app.get('/dashboard', requireLogin, async (req, res) => {
-  const user = req.session.user;
-
-  let complaints;
+  req.session.user = user;
   if (user.role === 'admin') {
-    complaints = await Complaint.find().sort({ id: -1 });
-  } else {
-    complaints = await Complaint.find({ userId: user._id }).sort({ id: -1 });
+    return res.redirect('/admin');
   }
-
-  const stats = {
-    total: complaints.length,
-    open: complaints.filter(c => c.status === 'Open').length,
-    inProgress: complaints.filter(c => c.status === 'In Progress').length,
-    resolved: complaints.filter(c => c.status === 'Resolved').length
-  };
-
-  res.render('dashboard', {
-    user,
-    complaints,
-    stats,
-    message: req.session.message || null
-  });
-
-  if (req.session.message) delete req.session.message;
-});
-
-app.get('/admin', requireLogin, isAdmin, async (req, res) => {
-  res.render('admin', {
-    user: req.session.user,
-    complaints: await Complaint.find().sort({ id: -1 })
-  });
-});
-// NEW: Delete complaint (only owner or admin)
-app.post('/delete/:id', requireLogin, async (req, res) => {
-  const id = parseInt(req.params.id);
-  const user = req.session.user;
-
-  const complaint = await Complaint.findOne({ id });
-
-  if (!complaint) {
-    return res.status(404).send('Complaint not found');
-  }
-
-  // Only owner or admin can delete
-  const isOwner = complaint.userId && complaint.userId.toString() === user._id.toString();
-  if (!isOwner && user.role !== 'admin') {
-    return res.status(403).send('You can only delete your own complaints');
-  }
-
-  await Complaint.deleteOne({ id });
   res.redirect('/dashboard');
 });
 
+// Logout
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/');
+});
+
+// Submit complaint (protected)
+app.get('/submit', requireLogin, (req, res) => {
+  res.render('submit', { user: req.session.user, error: null });
+});
+
+app.post('/submit', requireLogin, upload.single('photo'), async (req, res) => {
+  try {
+    const { title, category, description, anonymous, email } = req.body;
+    const submitter = anonymous === 'on' ? 'Anonymous' : req.session.user.name;
+    const userId = anonymous === 'on' ? null : req.session.user._id;
+    const photo = req.file ? req.file.filename : null;
+
+    // Generate unique id (simple counter - in production use better method)
+    const lastComplaint = await Complaint.findOne().sort({ id: -1 });
+    const newId = lastComplaint ? lastComplaint.id + 1 : 1;
+
+    const newComplaint = new Complaint({
+      id: newId,
+      submitter,
+      email: email || null,
+      title,
+      category,
+      description,
+      photo,
+      userId
+    });
+    await newComplaint.save();
+    res.redirect('/dashboard');
+  } catch (err) {
+    res.render('submit', { user: req.session.user, error: 'Submission failed' });
+  }
+});
+
+// Dashboard (student's own complaints)
+app.get('/dashboard', requireLogin, async (req, res) => {
+  const complaints = await Complaint.find({ userId: req.session.user._id }).sort({ createdAt: -1 });
+  res.render('dashboard', { user: req.session.user, complaints });
+});
+
+// Admin panel (all complaints)
+app.get('/admin', requireLogin, isAdmin, async (req, res) => {
+  const complaints = await Complaint.find().sort({ createdAt: -1 });
+  res.render('admin', { user: req.session.user, complaints });
+});
+
+// Update complaint (admin only)
 app.post('/admin/update/:id', requireLogin, isAdmin, async (req, res) => {
   const { status, reply } = req.body;
-  const complaint = await Complaint.findOne({ id: parseInt(req.params.id) });
-
-  if (complaint) {
-    complaint.status = status;
-    complaint.reply = reply?.trim() || 'No additional comment';
-    await complaint.save();
-  }
-
+  await Complaint.findOneAndUpdate({ id: req.params.id }, { status, reply });
   res.redirect('/admin');
 });
 
-app.listen(port, () => console.log(`Server running on port ${port}`));
+// Start server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
