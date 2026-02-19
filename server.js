@@ -46,19 +46,7 @@ const complaintSchema = new mongoose.Schema({
 
 const Complaint = mongoose.model('Complaint', complaintSchema);
 
-// Seed demo users (run once)
-async function seedDemoUsers() {
-  const count = await User.countDocuments();
-  if (count === 0) {
-    await User.insertMany([
-      { username: "student1", password: "1234", role: "student", name: "Rithika S" },
-      { username: "admin", password: "admin2026", role: "admin", name: "Admin" },
-      { username: "admin1234", password: "admin1234", role: "admin", name: "Admin 1234" }
-    ]);
-    console.log('Demo users seeded');
-  }
-}
-seedDemoUsers();
+
 
 // ── Middleware ──────────────────────────────────────────────
 app.set('view engine', 'ejs');
