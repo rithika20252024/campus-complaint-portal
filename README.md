@@ -1,84 +1,223 @@
 # Campus Complaint & Resolution System
 
-<div align="center">
-  <img src="portal.jpg" alt="Project Banner" width="800"/>
- 
-</div>
+A secure and centralized web-based complaint management system for campus environments.
+
+---
 
 
 
-## Live Links
+##  Problem Statement
 
-- **GitHub Repository**: [https://github.com/rithika20252024/campus-complaint-portal](https://github.com/rithika20252024/campus-complaint-portal)  
-- **Live Demo (Hosted on Render)**: [https://campus-complaint-portal-2-52oy.onrender.com/](https://campus-complaint-portal-2-52oy.onrender.com/)  
-  *(Note: Free Render tier may take 10–60 seconds to wake up on first visit after inactivity.)*
+Students often face issues related to:
 
-## Agenda / Overview
+- Hostel
+- Mess
+- Wi-Fi
+- Academics
+- Labs
+- Infrastructure
 
-- Problem Statement & Objective  
-- Project Scope (Modules & Features)  
-- UI Design & Navigation  
-- Technology Stack  
-- Database Design (ER Diagram)  
-- Flow Diagram / Use Case  
-- API Plan  
-- Progress Demo (Live + Folder Structure)  
-- Timeline & Task Distribution  
+Challenges include:
 
-## Problem Statement
-
-In a campus environment, students often face issues related to **hostel, mess, Wi-Fi, academics, labs, and infrastructure**.
-
-Common challenges include:
 - Delayed resolutions  
-- Lack of transparency in complaint tracking  
-- No centralized platform for submission  
+- No centralized complaint tracking  
+- Lack of transparency  
 - Limited admin oversight  
 
-Students need an easy way to report issues (anonymously or with details), attach proof, and track status.  
-Admins need tools to manage, update, and respond to complaints efficiently.
+This project provides a structured and transparent complaint management portal.
+
+---
 
 ## Objective
 
-Build a simple, secure web portal for campus complaints that:
-- Enables students to submit issues easily (with or without identity)  
-- Provides anonymity option for sensitive cases  
-- Allows admins to view all complaints, track progress, update status, and reply  
-- Ensures real-time visibility of status and responses for both sides  
+- Build a secure campus complaint portal  
+- Enable students to submit complaints (anonymous option available)  
+- Allow admins to manage and update complaints  
+- Provide real-time status tracking  
+- Improve communication and resolution speed  
 
-**Outcome**: Faster resolution and better communication on campus.
+---
 
 ## Target Users
 
-- **Students**  
-  - Primary users  
-  - Submit complaints  
-  - View status of own complaints  
-  - Optional anonymity  
+###  Students
+- Submit complaints  
+- Track complaint status  
+- Choose anonymous submission  
 
-- **Admin / Faculty / Warden**  
-  - Reviewers & resolvers  
-  - View all complaints  
-  - Update status (Open → In Progress → Resolved)  
-  - Add replies / comments  
+### Admin / Faculty / Warden
+- View all complaints  
+- Update complaint status  
+- Add replies  
+
+---
 
 ## Core Features
 
-- User Authentication (Login/Logout with session management)  
-- Complaint Submission (title, category, description, photo upload, anonymous option, optional email)  
-- Student Dashboard (view own complaints, filters, stats)  
-- Admin Panel (view all, update status, add replies)  
+### Authentication
+- Login / Logout
+- Session-based authentication
+- Demo Credentials:
+  - Student → `student1 / 1234`
+  - Admin → `admin / admin2026`
 
-## Technology Stack
+###  Complaint Submission
+- Title
+- Category
+- Description
+- Photo upload
+- Anonymous option
+- Optional email
 
-- **Frontend**: HTML5, CSS3 (Tailwind CSS CDN), EJS, JavaScript  
-- **Backend**: Node.js, Express.js  
-- **Database**: MongoDB Atlas + Mongoose  
-- **Tools**: VS Code, GitHub, Render.com, Postman  
+###  Student Dashboard
+- View own complaints
+- Status tracking
+- Search & filter
+- Stats cards (Total, Open, In Progress, Resolved)
 
-## Folder Structure
-<div align="center">
-  <img src="structure.jpg" alt="Project Banner" width="800"/>
- 
-</div>
+###  Admin Panel
+- View all complaints
+- Update status
+- Add replies
+
+---
+
+##  Technology Stack
+
+### Frontend
+- HTML5  
+- CSS3  
+- Tailwind CSS  
+- EJS  
+- JavaScript  
+
+### Backend
+- Node.js  
+- Express.js  
+
+### Database
+- MongoDB Atlas  
+- Mongoose  
+
+### Tools
+- VS Code  
+- GitHub  
+- Postman  
+- Render (Deployment)
+
+---
+
+## 🗃 Database Design
+
+### User Schema
+- username
+- name
+- email
+- password
+- role (student/admin)
+
+### Complaint Schema
+- title
+- category
+- description
+- status (Open | In Progress | Resolved)
+- reply
+- createdAt
+- userId (null if anonymous)
+
+### Relationship
+One User → Many Complaints
+
+---
+
+## 📡 API Endpoints
+
+| Method | Route | Description |
+|--------|-------|------------|
+| GET    | / | Landing Page |
+| GET    | /login | Login Page |
+| POST   | /login | Authenticate User |
+| GET    | /register | Register Page |
+| POST   | /register | Create User |
+| GET    | /dashboard | Student Dashboard |
+| GET    | /admin | Admin Panel |
+| POST   | /submit | Submit Complaint |
+| POST   | /update/:id | Update Complaint |
+| GET    | /logout | Logout |
+
+---
+
+##  Folder Structure
+
+campus-complaint-portal/
+│
+├── models/
+│ ├── User.js
+│ └── Complaint.js
+│
+├── routes/
+│ ├── auth.js
+│ ├── complaints.js
+│ └── admin.js
+│
+├── views/
+│ ├── index.ejs
+│ ├── login.ejs
+│ ├── register.ejs
+│ ├── dashboard.ejs
+│ ├── submit.ejs
+│ └── admin.ejs
+│
+├── public/
+│ └── uploads/
+│
+├── app.js
+├── .env
+├── package.json
+└── README.md
+
+
+---
+
+##  Live Demo
+
+**GitHub Repository:**  
+https://github.com/rithika20252024/campus-complaint-portal  
+
+**Live Deployment:**  
+https://campus-complaint-portal-2-52oy.onrender.com/
+
+---
+## Future Improvements
+
+Email notifications
+
+Complaint analytics charts
+
+Pagination
+
+Advanced search filters
+
+Role-based access control
+
+##  How to Run Locally
+
+```bash
+git clone https://github.com/rithika20252024/campus-complaint-portal
+cd campus-complaint-portal
+npm install
+npm start
+
+
+Create a .env file:
+
+MONGO_URI=your_mongodb_connection_string
+SESSION_SECRET=your_secret_key
+
+
+Open in browser:
+
+http://localhost:3000
+
+
 
