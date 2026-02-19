@@ -57,10 +57,7 @@ This project provides a structured and transparent complaint management portal.
 ### Authentication
 - Login / Logout
 - Session-based authentication
-- Demo Credentials:
-  - Student → `student1 / 1234`
-  - Admin → `admin / admin2026`
-
+- 
 ###  Complaint Submission
 - Title
 - Category
@@ -75,10 +72,11 @@ This project provides a structured and transparent complaint management portal.
 - Search & filter
 - Stats cards (Total, Open, In Progress, Resolved)
 
-###  Admin Panel
-- View all complaints
-- Update status
-- Add replies
+### 🛠 Admin Panel
+- Centralized complaint table
+- Status update dropdown
+- Reply management
+- Efficient complaint tracking
 
 ---
 
@@ -125,8 +123,31 @@ This project provides a structured and transparent complaint management portal.
 - createdAt
 - userId (null if anonymous)
 
-### Relationship
-One User → Many Complaints
+
+### User Collection
+| Field | Type | Description |
+|-------|------|------------|
+| username | String | Unique identifier |
+| name | String | Full name |
+| email | String | Optional |
+| password | String | Hashed password |
+| role | String | student / admin |
+
+### Complaint Collection
+| Field | Type | Description |
+|-------|------|------------|
+| title | String | Complaint title |
+| category | String | Complaint category |
+| description | String | Detailed explanation |
+| status | String | Open / In Progress / Resolved |
+| reply | String | Admin response |
+| userId | ObjectId | Linked user |
+| createdAt | Date | Timestamp |
+
+Relationship:
+- One User → Many Complaints  
+- Anonymous complaint → `userId = null`
+
 
 ---
 
@@ -147,7 +168,10 @@ One User → Many Complaints
 
 ---
 
+
 ##  Folder Structure
+
+```bash
 
 campus-complaint-portal/
 │
@@ -176,7 +200,7 @@ campus-complaint-portal/
 ├── package.json
 └── README.md
 
-
+``` 
 ---
 
 ##  Live Demo
@@ -207,7 +231,7 @@ git clone https://github.com/rithika20252024/campus-complaint-portal
 cd campus-complaint-portal
 npm install
 npm start
-
+``` 
 
 Create a .env file:
 
