@@ -101,7 +101,7 @@ This project provides a structured and transparent complaint management portal.
 - VS Code  
 - GitHub  
 - Postman  
-- Render (Deployment)
+- vercel (Deployment)
 
 ---
 
@@ -209,7 +209,7 @@ campus-complaint-portal/
 https://github.com/rithika20252024/campus-complaint-portal  
 
 **Live Deployment:**  
-https://campus-complaint-portal-2-52oy.onrender.com/
+ https://campus-complaint-portal-five.vercel.app/
 
 ---
 ## Future Improvements
